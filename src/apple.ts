@@ -1,7 +1,8 @@
 import { Vector2d } from "./vector-2d";
 import { GameWorldSizesCalculator } from "./game-world-sizes-calculator";
+import { DrawableObject } from "./interfaces/drawable-object";
 
-export class Apple{
+export class Apple implements DrawableObject{
     position = new Vector2d();
 
     constructor(

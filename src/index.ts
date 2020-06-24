@@ -140,6 +140,10 @@ var snake = {
 };
 
 const apple = new Apple(context, snake, gameWorldSizesCalculator);
+const drawableGameObjects = [
+  gameBackground,
+  apple  
+]; 
 
 (() => { 
     gameWorldSizesCalculator.recalculateSizes();
@@ -187,9 +191,8 @@ setInterval(() => {
         context.fillStyle = "red";
         context.fillText("Game over", canvas.width/2, canvas.height/2 + canvas.width / 24);
     }else{
-        gameBackground.draw();
         snake.move();
-        apple.draw();
+        drawableGameObjects.forEach(x => x.draw());
         snake.draw();
     }
 }, 100);
