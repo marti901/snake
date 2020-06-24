@@ -1,4 +1,5 @@
 import { GameWorldSizesCalculator } from "./game-world-sizes-calculator";
+import { Apple } from "./apple";
 
 const snakeScoreSpan = document.querySelector('#snake-score') as HTMLElement;
 const canvas = document.querySelector('#snake-game-canvas') as HTMLCanvasElement;
@@ -38,7 +39,7 @@ var snake = {
         y: 0
     },
     move(){
-        var colletedAppleInCurrentFrame = this.x === apple.x && this.y === apple.y;
+        var colletedAppleInCurrentFrame = this.x === apple.position.x && this.y === apple.position.y;
 
         this.x += this.velocity.x;
         this.y += this.velocity.y;
@@ -59,7 +60,7 @@ var snake = {
                     y: 0
                 },
                 move(){
-                    var colletedAppleInCurrentFrame = this.x === apple.x && this.y === apple.y;
+                    var colletedAppleInCurrentFrame = this.x === apple.position.x && this.y === apple.position.y;
             
                     this.x += this.velocity.x;
                     this.y += this.velocity.y;
@@ -149,22 +150,7 @@ var snake = {
     }
 };
 
-var apple = {
-    x: 0,
-    y: 0,
-    draw() {
-        context.beginPath();
-        context.strokeStyle = 'green';
-        context.rect(this.x * gameWorldSizesCalculator.tileSize, this.y * gameWorldSizesCalculator.tileSize, gameWorldSizesCalculator.tileSize, gameWorldSizesCalculator.tileSize);
-        context.stroke();
-    },
-    relocate(){
-        do{
-            this.x =  Math.floor(Math.random() * (gameWorldSizesCalculator.amountOfHorizontalTiles - 1));
-            this.y = Math.floor(Math.random() * (gameWorldSizesCalculator.amountOfVertivalTiles - 1));
-        }while(snake.collidesWithBody(this.x, this.y));
-    }
-};
+const apple = new Apple(context, snake, gameWorldSizesCalculator);
 
 (() => { 
     gameWorldSizesCalculator.recalculateSizes();
@@ -303,7 +289,7 @@ canvas.addEventListener('mousedown', (event) => {
                         y: 0
                     },
                     move(){
-                        var colletedAppleInCurrentFrame = this.x === apple.x && this.y === apple.y;
+                        var colletedAppleInCurrentFrame = this.x === apple.position.x && this.y === apple.position.y;
                 
                         this.x += this.velocity.x;
                         this.y += this.velocity.y;
