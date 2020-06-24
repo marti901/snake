@@ -1,28 +1,17 @@
 import { GameWorldSizesCalculator } from "./game-world-sizes-calculator";
 import { Apple } from "./apple";
+import { GameBackground } from "./game-background";
 
 const snakeScoreSpan = document.querySelector('#snake-score') as HTMLElement;
 const canvas = document.querySelector('#snake-game-canvas') as HTMLCanvasElement;
 const context = canvas.getContext("2d")!;
 
 const gameWorldSizesCalculator = new GameWorldSizesCalculator(canvas);
-
+const gameBackground = new GameBackground(context, gameWorldSizesCalculator);
 snakeScoreSpan.innerText ='Score: 0';
 
 function clearCanvas(){
     context.clearRect(0, 0, canvas.width, canvas.height);
-}
-
-function drawBackground() {
-    context.strokeStyle = '#ddd';
-    context.lineWidth = 0.5;
-    context.beginPath();
-    for (let x = 0; x < gameWorldSizesCalculator.amountOfHorizontalTiles; x++) {
-        for (let y = 0; y < gameWorldSizesCalculator.amountOfVertivalTiles; y++) {
-            context.rect(x * gameWorldSizesCalculator.tileSize, y * gameWorldSizesCalculator.tileSize, gameWorldSizesCalculator.tileSize, gameWorldSizesCalculator.tileSize);
-        }
-    }
-    context.stroke();
 }
 
 var snake = {
@@ -157,7 +146,6 @@ const apple = new Apple(context, snake, gameWorldSizesCalculator);
 })();
 
 apple.relocate();
-drawBackground();
 
 window.addEventListener('resize', () => {
     gameWorldSizesCalculator.recalculateSizes();
@@ -178,7 +166,7 @@ function drawButton(x: number, y: number, width: number, height: number){
 
 function drawMenu(){
 
-    drawBackground();
+    gameBackground.draw();
     
     drawButton(canvas.width * 0.15, canvas.height * 0.35, canvas.width * 0.7, canvas.height * 0.3);
 
@@ -199,7 +187,7 @@ setInterval(() => {
         context.fillStyle = "red";
         context.fillText("Game over", canvas.width/2, canvas.height/2 + canvas.width / 24);
     }else{
-        drawBackground();
+        gameBackground.draw();
         snake.move();
         apple.draw();
         snake.draw();
