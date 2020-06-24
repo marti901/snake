@@ -20,8 +20,8 @@ module.exports = {
         extensions: ['.ts', '.js'],
     },
     output: {
-        publicPath: 'public',
+        publicPath: 'public/js',
         filename: 'snake-game.js',
-        path: path.resolve(__dirname, 'public'),
+        path: path.resolve(__dirname, 'public/js'),
     },
 }
