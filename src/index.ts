@@ -1,40 +1,12 @@
+import { GameWorldSizesCalculator } from "./game-world-sizes-calculator";
+
 const snakeScoreSpan = document.querySelector('#snake-score') as HTMLElement;
 const canvas = document.querySelector('#snake-game-canvas') as HTMLCanvasElement;
 const context = canvas.getContext("2d")!;
 
+const gameWorldSizesCalculator = new GameWorldSizesCalculator(canvas);
+
 snakeScoreSpan.innerText ='Score: 0';
-
-let tileSize: number, 
-    amountOfHorizontalTiles: number, 
-    amountOfVertivalTiles: number;
-
-var maxTilesInRowOrColum = 25;
-
-function getTileSize(canvas: HTMLCanvasElement){
-    if(canvas.width > canvas.height){
-        return canvas.width / maxTilesInRowOrColum;
-    }else{
-        return canvas.height / maxTilesInRowOrColum;
-    }
-}
-
-function calculateSizes() {
-    console.log(' calculateSizes ');
-    var newWidth = canvas.parentElement?.getBoundingClientRect().width ?? canvas.getBoundingClientRect().width;
-    var newHeight = canvas.parentElement?.getBoundingClientRect().height ?? canvas.getBoundingClientRect().height;
-
-    tileSize = getTileSize(canvas);
-    newWidth = Math.floor(newWidth/tileSize) * tileSize;
-    newHeight = Math.floor(newHeight/tileSize) * tileSize;
-
-    canvas.width = newWidth;
-    canvas.height = newHeight;
-    canvas.style.width = `${newWidth}px`;
-    canvas.style.height = `${newHeight}px`;;
-
-    amountOfHorizontalTiles = Math.ceil(canvas.width / tileSize);
-    amountOfVertivalTiles = Math.ceil(canvas.height / tileSize);    
-}
 
 function clearCanvas(){
     context.clearRect(0, 0, canvas.width, canvas.height);
@@ -44,9 +16,9 @@ function drawBackground() {
     context.strokeStyle = '#ddd';
     context.lineWidth = 0.5;
     context.beginPath();
-    for (let x = 0; x < amountOfHorizontalTiles; x++) {
-        for (let y = 0; y < amountOfVertivalTiles; y++) {
-            context.rect(x * tileSize, y * tileSize, tileSize, tileSize);
+    for (let x = 0; x < gameWorldSizesCalculator.amountOfHorizontalTiles; x++) {
+        for (let y = 0; y < gameWorldSizesCalculator.amountOfVertivalTiles; y++) {
+            context.rect(x * gameWorldSizesCalculator.tileSize, y * gameWorldSizesCalculator.tileSize, gameWorldSizesCalculator.tileSize, gameWorldSizesCalculator.tileSize);
         }
     }
     context.stroke();
@@ -117,8 +89,8 @@ var snake = {
                 isOutSizeCanvas(){
                     return this.x < 0 || 
                         this.y < 0 || 
-                        this.x >= amountOfHorizontalTiles ||
-                        this.y >= amountOfVertivalTiles;
+                        this.x >= gameWorldSizesCalculator.amountOfHorizontalTiles ||
+                        this.y >= gameWorldSizesCalculator.amountOfVertivalTiles;
                 },
                 hasCollidedWithOwnBody(){
                     return this.collidesWithBody(this.x, this.y);
@@ -130,7 +102,7 @@ var snake = {
                     context.beginPath();
                     context.strokeStyle = 'red';
                     for(var i = 0; i < this.body.length; i++){
-                        context.rect(this.body[i].x * tileSize, this.body[i].y * tileSize, tileSize, tileSize);
+                        context.rect(this.body[i].x * gameWorldSizesCalculator.tileSize, this.body[i].y * gameWorldSizesCalculator.tileSize, gameWorldSizesCalculator.tileSize, gameWorldSizesCalculator.tileSize);
                     }
                     context.stroke();
                 }
@@ -158,8 +130,8 @@ var snake = {
     isOutSizeCanvas(){
         return this.x < 0 || 
             this.y < 0 || 
-            this.x >= amountOfHorizontalTiles ||
-            this.y >= amountOfVertivalTiles;
+            this.x >= gameWorldSizesCalculator.amountOfHorizontalTiles ||
+            this.y >= gameWorldSizesCalculator.amountOfVertivalTiles;
     },
     hasCollidedWithOwnBody(){
         return this.collidesWithBody(this.x, this.y);
@@ -171,17 +143,11 @@ var snake = {
         context.beginPath();
         context.strokeStyle = 'red';
         for(var i = 0; i < this.body.length; i++){
-            context.rect(this.body[i].x * tileSize, this.body[i].y * tileSize, tileSize, tileSize);
+            context.rect(this.body[i].x * gameWorldSizesCalculator.tileSize, this.body[i].y * gameWorldSizesCalculator.tileSize, gameWorldSizesCalculator.tileSize, gameWorldSizesCalculator.tileSize);
         }
         context.stroke();
     }
 };
-
-function initCanvas(){
-    tileSize = getTileSize(canvas);
-    canvas.width = Math.floor((canvas.parentElement?.getBoundingClientRect().width ?? canvas.getBoundingClientRect().width) / tileSize) * tileSize;
-    canvas.height = Math.floor((canvas.parentElement?.getBoundingClientRect().height ?? canvas.getBoundingClientRect().height) / tileSize) * tileSize;
-}
 
 var apple = {
     x: 0,
@@ -189,27 +155,26 @@ var apple = {
     draw() {
         context.beginPath();
         context.strokeStyle = 'green';
-        context.rect(this.x * tileSize, this.y * tileSize, tileSize, tileSize);
+        context.rect(this.x * gameWorldSizesCalculator.tileSize, this.y * gameWorldSizesCalculator.tileSize, gameWorldSizesCalculator.tileSize, gameWorldSizesCalculator.tileSize);
         context.stroke();
     },
     relocate(){
         do{
-            this.x =  Math.floor(Math.random() * (amountOfHorizontalTiles - 1));
-            this.y = Math.floor(Math.random() * (amountOfVertivalTiles - 1));
+            this.x =  Math.floor(Math.random() * (gameWorldSizesCalculator.amountOfHorizontalTiles - 1));
+            this.y = Math.floor(Math.random() * (gameWorldSizesCalculator.amountOfVertivalTiles - 1));
         }while(snake.collidesWithBody(this.x, this.y));
     }
 };
 
-(() => {
-    initCanvas();    
-    calculateSizes();
+(() => { 
+    gameWorldSizesCalculator.recalculateSizes();
 })();
 
 apple.relocate();
 drawBackground();
 
 window.addEventListener('resize', () => {
-    calculateSizes();
+    gameWorldSizesCalculator.recalculateSizes();
 });
 
 var gameMode = 'menu';
@@ -368,8 +333,8 @@ canvas.addEventListener('mousedown', (event) => {
                     isOutSizeCanvas(){
                         return this.x < 0 || 
                             this.y < 0 || 
-                            this.x >= amountOfHorizontalTiles ||
-                            this.y >= amountOfVertivalTiles;
+                            this.x >= gameWorldSizesCalculator.amountOfHorizontalTiles ||
+                            this.y >= gameWorldSizesCalculator.amountOfVertivalTiles;
                     },
                     hasCollidedWithOwnBody(){
                         return this.collidesWithBody(this.x, this.y);
@@ -381,13 +346,13 @@ canvas.addEventListener('mousedown', (event) => {
                         context.beginPath();
                         context.strokeStyle = 'red';
                         for(var i = 0; i < this.body.length; i++){
-                            context.rect(this.body[i].x * tileSize, this.body[i].y * tileSize, tileSize, tileSize);
+                            context.rect(this.body[i].x * gameWorldSizesCalculator.tileSize, this.body[i].y * gameWorldSizesCalculator.tileSize, gameWorldSizesCalculator.tileSize, gameWorldSizesCalculator.tileSize);
                         }
                         context.stroke();
                     }
                 };
                 
-                if(amountOfHorizontalTiles >= amountOfVertivalTiles){
+                if(gameWorldSizesCalculator.amountOfHorizontalTiles >= gameWorldSizesCalculator.amountOfVertivalTiles){
                     snake.velocity = { x: 1, y: 0};
                 }else{
                     snake.velocity = { x: 0, y: 1};
