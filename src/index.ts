@@ -121,3 +121,24 @@ canvas.addEventListener('mousedown', (event) => {
             }
     }
 });
+
+canvas.addEventListener('touchstart', (event) => {
+    const canvasBoundingClientRect = canvas.getBoundingClientRect();
+    const mouseX = event.touches[0].clientX - canvasBoundingClientRect.left;
+    const mouseY = event.touches[0].clientY - canvasBoundingClientRect.top;
+
+    if(gameStateManager.gameState === GameStates.MainMenu){
+        var startButtonLeft = canvas.width * 0.15;
+        var startButtonRight = startButtonLeft + canvas.width * 0.7;
+        var startButtonTop = canvas.height * 0.35;
+        var startButtonBottom = startButtonTop + canvas.height * 0.3;
+
+        if(
+            mouseX > startButtonLeft &&
+            mouseX < startButtonRight &&
+            mouseY > startButtonTop &&
+            mouseY < startButtonBottom){
+                gameStateManager.changeGameState(GameStates.PlayingGame);
+            }
+    }
+});

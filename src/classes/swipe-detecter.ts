@@ -14,8 +14,11 @@ export class SwipeDetector{
     touchEndHandler: TouchEventHandler;
     touchCanceleHandler: TouchEventHandler;
 
-    constructor(){
+    constructor(
+        private canvas: HTMLCanvasElement
+    ){
         this.touchStartHandler = (event: TouchEvent) => {
+            event.preventDefault();
             this.swipeStarted = true;
             this.touchStartX = event.touches[0].clientX;
             this.touchStartY = event.touches[0].clientY;
@@ -47,10 +50,10 @@ export class SwipeDetector{
 
     addSwipeEventObserver(observer: SwipeEventObserver){
         if(this.swipeObservers.length === 0){
-            document.addEventListener('touchstart', this.touchStartHandler);
-            document.addEventListener('touchmove', this.touchMoveHandler);
-            document.addEventListener('touchend', this.touchEndHandler);
-            document.addEventListener('touchcancel', this.touchCanceleHandler);
+            this.canvas.addEventListener('touchstart', this.touchStartHandler);
+            this.canvas.addEventListener('touchmove', this.touchMoveHandler);
+            this.canvas.addEventListener('touchend', this.touchEndHandler);
+            this.canvas.addEventListener('touchcancel', this.touchCanceleHandler);
         }
 
         this.swipeObservers.push(observer);
@@ -63,10 +66,10 @@ export class SwipeDetector{
         }
 
         if(this.swipeObservers.length === 0){
-            document.removeEventListener('touchstart', this.touchStartHandler);
-            document.removeEventListener('touchmove', this.touchMoveHandler);
-            document.removeEventListener('touchend', this.touchEndHandler);
-            document.removeEventListener('touchcancel', this.touchCanceleHandler);
+            this.canvas.removeEventListener('touchstart', this.touchStartHandler);
+            this.canvas.removeEventListener('touchmove', this.touchMoveHandler);
+            this.canvas.removeEventListener('touchend', this.touchEndHandler);
+            this.canvas.removeEventListener('touchcancel', this.touchCanceleHandler);
         }
     }
 }

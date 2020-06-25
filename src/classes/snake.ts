@@ -16,11 +16,13 @@ export class Snake implements GameObject {
     private body: Array<Vector2d>;
     private velocity: Vector2d;
     private keyboard = new Keyboard();
-    private swipeDetector = new SwipeDetector();
+    private swipeDetector: SwipeDetector; 
 
     constructor(
         private gameWorldSizesCalculator: GameWorldSizesCalculator,
+        canvas: HTMLCanvasElement,
         private context: CanvasRenderingContext2D) { 
+            this.swipeDetector = new SwipeDetector(canvas);
             this.reset();
             const self = this;
             this.keyboard.addKeyDownOberserver((event) => self.handleKeyboardInput(event));
