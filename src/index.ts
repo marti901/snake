@@ -1,161 +1,56 @@
-import { GameWorldSizesCalculator } from "./game-world-sizes-calculator";
-import { Apple } from "./apple";
-import { GameBackground } from "./game-background";
+import { GameBackground } from "./classes/game-background";
+import { GameEvents } from "./enums/game-events.enum";
+import { GameStates } from "./enums/game-states.enum";
+import { GameStateManager } from "./classes/game-state-manager";
+import { ScoreBoard } from "./classes/score-board";
+import { GameEventHandler } from "./classes/game-event-handler";
+import { CollisionHandler } from "./classes/collision-handler";
+import { GameWorld } from "./classes/game-world";
 
-const snakeScoreSpan = document.querySelector('#snake-score') as HTMLElement;
 const canvas = document.querySelector('#snake-game-canvas') as HTMLCanvasElement;
 const context = canvas.getContext("2d")!;
 
-const gameWorldSizesCalculator = new GameWorldSizesCalculator(canvas);
-const gameBackground = new GameBackground(context, gameWorldSizesCalculator);
-snakeScoreSpan.innerText ='Score: 0';
+const gameWorld = new GameWorld(canvas, context);
+const gameBackground = new GameBackground(context, gameWorld.sizesCalculator);
 
 function clearCanvas(){
     context.clearRect(0, 0, canvas.width, canvas.height);
 }
 
-var snake = {
-    x: 5,
-    y: 5,
-    applesEaten: 0,
-    body: [
-        {x: 3, y: 5},
-        {x: 4, y: 5},
-        {x: 5, y: 5}
-    ],
-    velocity: {
-        x: 1,
-        y: 0
-    },
-    move(){
-        var colletedAppleInCurrentFrame = this.x === apple.position.x && this.y === apple.position.y;
+const gameStateManager = new GameStateManager(gameWorld.snake, gameWorld.apple);
+const scoreBoard = new ScoreBoard();
 
-        this.x += this.velocity.x;
-        this.y += this.velocity.y;
+const gameEventHandler = new GameEventHandler(
+    gameWorld.snake,
+    gameWorld.apple,
+    gameStateManager,
+    scoreBoard);
 
-        if(this.hasDied()){
-            gameMode = 'game-over';
-            setTimeout(() => gameMode = 'menu', 1000);snake = {
-                x: 5,
-                y: 5,
-                applesEaten: 0,
-                body: [
-                    {x: 3, y: 5},
-                    {x: 4, y: 5},
-                    {x: 5, y: 5}
-                ],
-                velocity: {
-                    x: 1,
-                    y: 0
-                },
-                move(){
-                    var colletedAppleInCurrentFrame = this.x === apple.position.x && this.y === apple.position.y;
-            
-                    this.x += this.velocity.x;
-                    this.y += this.velocity.y;
-            
-                    if(this.hasDied()){
-                        gameMode = 'game-over';
-                        setTimeout(() => gameMode = 'menu', 3000);
-                        return;
-                    }
-            
-                    if(colletedAppleInCurrentFrame){
-                        this.applesEaten++;
-                        snakeScoreSpan.innerHTML = `Score: ${this.applesEaten}`;
-                        apple.relocate();
-                    }else{
-                        this.body.splice(0, 1);
-                    }
-            
-                    this.body.push({
-                        x: this.x,
-                        y: this.y
-                    });
-                },
-                hasDied(){
-                    return this.isOutSizeCanvas() || this.hasCollidedWithOwnBody(); 
-                },
-                isOutSizeCanvas(){
-                    return this.x < 0 || 
-                        this.y < 0 || 
-                        this.x >= gameWorldSizesCalculator.amountOfHorizontalTiles ||
-                        this.y >= gameWorldSizesCalculator.amountOfVertivalTiles;
-                },
-                hasCollidedWithOwnBody(){
-                    return this.collidesWithBody(this.x, this.y);
-                },
-                collidesWithBody(x, y){
-                    return this.body.findIndex(bodyPart => bodyPart.x === x && bodyPart.y === y) > -1;
-                },
-                draw() {
-                    context.beginPath();
-                    context.strokeStyle = 'red';
-                    for(var i = 0; i < this.body.length; i++){
-                        context.rect(this.body[i].x * gameWorldSizesCalculator.tileSize, this.body[i].y * gameWorldSizesCalculator.tileSize, gameWorldSizesCalculator.tileSize, gameWorldSizesCalculator.tileSize);
-                    }
-                    context.stroke();
-                }
-            };
-            
-            return;
-        }
+const collisionHandler = new CollisionHandler(
+    gameWorld.snake,
+    gameWorld.apple,
+    gameEventHandler
+);
 
-        if(colletedAppleInCurrentFrame){
-            this.applesEaten++;
-            snakeScoreSpan.innerHTML = `Score: ${this.applesEaten}`;
-            apple.relocate();
-        }else{
-            this.body.splice(0, 1);
-        }
+gameWorld.snake.onSnakeHasDied = () => {
+    gameEventHandler.handle(GameEvents.SnakeDied);
+}
 
-        this.body.push({
-            x: this.x,
-            y: this.y
-        });
-    },
-    hasDied(){
-        return this.isOutSizeCanvas() || this.hasCollidedWithOwnBody(); 
-    },
-    isOutSizeCanvas(){
-        return this.x < 0 || 
-            this.y < 0 || 
-            this.x >= gameWorldSizesCalculator.amountOfHorizontalTiles ||
-            this.y >= gameWorldSizesCalculator.amountOfVertivalTiles;
-    },
-    hasCollidedWithOwnBody(){
-        return this.collidesWithBody(this.x, this.y);
-    },
-    collidesWithBody(x: number, y: number){
-        return this.body.findIndex(bodyPart => bodyPart.x === x && bodyPart.y === y) > -1;
-    },
-    draw() {
-        context.beginPath();
-        context.strokeStyle = 'red';
-        for(var i = 0; i < this.body.length; i++){
-            context.rect(this.body[i].x * gameWorldSizesCalculator.tileSize, this.body[i].y * gameWorldSizesCalculator.tileSize, gameWorldSizesCalculator.tileSize, gameWorldSizesCalculator.tileSize);
-        }
-        context.stroke();
-    }
-};
-
-const apple = new Apple(context, snake, gameWorldSizesCalculator);
 const drawableGameObjects = [
   gameBackground,
-  apple  
+  gameWorld.apple,
+  gameWorld.snake
 ]; 
 
 (() => { 
-    gameWorldSizesCalculator.recalculateSizes();
+    gameWorld.sizesCalculator.recalculateSizes();
 })();
 
-apple.relocate();
+gameWorld.apple.relocate();
 
 window.addEventListener('resize', () => {
-    gameWorldSizesCalculator.recalculateSizes();
+    gameWorld.sizesCalculator.recalculateSizes();
 });
-
-var gameMode = 'menu';
 
 function drawButton(x: number, y: number, width: number, height: number){
     
@@ -181,21 +76,30 @@ function drawMenu(){
 }
 
 setInterval(() => {
-    
     clearCanvas();
-    if(gameMode === 'menu'){
-        drawMenu();
-    }else if(gameMode === 'game-over'){
-        context.font = `${canvas.width / 6}px Arial`;
-        context.textAlign = "center";
-        context.fillStyle = "red";
-        context.fillText("Game over", canvas.width/2, canvas.height/2 + canvas.width / 24);
-    }else{
-        snake.move();
-        drawableGameObjects.forEach(x => x.draw());
-        snake.draw();
+
+    switch(gameStateManager.gameState){
+        case GameStates.MainMenu:
+            drawMenu();
+            break;
+        
+        case GameStates.GameOver:
+            context.font = `${canvas.width / 6}px Arial`;
+            context.textAlign = "center";
+            context.fillStyle = "red";
+            context.fillText("Game over", canvas.width/2, canvas.height/2 + canvas.width / 24);
+            break;
+        
+        case GameStates.PlayingGame:
+            collisionHandler.handle();
+            gameWorld.snake.update();
+            drawableGameObjects.forEach(x => x.draw());
+            break;
+
+        default:
+            console.log(`Unknown game state '${gameStateManager.gameState}'!`)
     }
-}, 100);
+}, 250);
 
 document.addEventListener('keydown', (event) => {
     var keyArrowUp = 38;
@@ -222,7 +126,7 @@ document.addEventListener('keydown', (event) => {
         event.preventDefault();
     }
 
-    switch(event.keyCode){
+    /*switch(event.keyCode){
         case keyArrowUp:
         case keyW:
             if(snake.velocity.y !== 1){
@@ -247,15 +151,15 @@ document.addEventListener('keydown', (event) => {
                 snake.velocity = { x: 1, y: 0 };
             }
             break;
-    }
+    }*/
 });
 
 canvas.addEventListener('mousedown', (event) => {
-    var canvasBoundingClientRect = canvas.getBoundingClientRect();
-    var mouseX = event.x - canvasBoundingClientRect.left;
-    var mouseY = event.y - canvasBoundingClientRect.top;
+    const canvasBoundingClientRect = canvas.getBoundingClientRect();
+    const mouseX = event.x - canvasBoundingClientRect.left;
+    const mouseY = event.y - canvasBoundingClientRect.top;
 
-    if(gameMode === 'menu'){
+    if(gameStateManager.gameState === GameStates.MainMenu){
         var startButtonLeft = canvas.width * 0.15;
         var startButtonRight = startButtonLeft + canvas.width * 0.7;
         var startButtonTop = canvas.height * 0.35;
@@ -266,85 +170,15 @@ canvas.addEventListener('mousedown', (event) => {
             mouseX < startButtonRight &&
             mouseY > startButtonTop &&
             mouseY < startButtonBottom){
-                snake = {
-                    x: 5,
-                    y: 5,
-                    applesEaten: 0,
-                    body: [
-                        {x: 3, y: 5},
-                        {x: 4, y: 5},
-                        {x: 5, y: 5}
-                    ],
-                    velocity: {
-                        x: 0,
-                        y: 0
-                    },
-                    move(){
-                        var colletedAppleInCurrentFrame = this.x === apple.position.x && this.y === apple.position.y;
-                
-                        this.x += this.velocity.x;
-                        this.y += this.velocity.y;
-                
-                        if(this.hasDied()){
-                            gameMode = 'game-over';
-                            setTimeout(() => gameMode = 'menu', 3000);
-                            return;
-                        }
-                
-                        if(colletedAppleInCurrentFrame){
-                            this.applesEaten++;
-                            snakeScoreSpan.innerHTML = `Score: ${this.applesEaten}`;
-                            apple.relocate();
-                        }else{
-                            this.body.splice(0, 1);
-                        }
-                
-                        this.body.push({
-                            x: this.x,
-                            y: this.y
-                        });
-                    },
-                    hasDied(){
-                        return this.isOutSizeCanvas() || this.hasCollidedWithOwnBody(); 
-                    },
-                    isOutSizeCanvas(){
-                        return this.x < 0 || 
-                            this.y < 0 || 
-                            this.x >= gameWorldSizesCalculator.amountOfHorizontalTiles ||
-                            this.y >= gameWorldSizesCalculator.amountOfVertivalTiles;
-                    },
-                    hasCollidedWithOwnBody(){
-                        return this.collidesWithBody(this.x, this.y);
-                    },
-                    collidesWithBody(x, y){
-                        return this.body.findIndex(bodyPart => bodyPart.x === x && bodyPart.y === y) > -1;
-                    },
-                    draw() {
-                        context.beginPath();
-                        context.strokeStyle = 'red';
-                        for(var i = 0; i < this.body.length; i++){
-                            context.rect(this.body[i].x * gameWorldSizesCalculator.tileSize, this.body[i].y * gameWorldSizesCalculator.tileSize, gameWorldSizesCalculator.tileSize, gameWorldSizesCalculator.tileSize);
-                        }
-                        context.stroke();
-                    }
-                };
-                
-                if(gameWorldSizesCalculator.amountOfHorizontalTiles >= gameWorldSizesCalculator.amountOfVertivalTiles){
-                    snake.velocity = { x: 1, y: 0};
-                }else{
-                    snake.velocity = { x: 0, y: 1};
-                }
-
-                apple.relocate();
-                gameMode = 'play';
+                gameStateManager.changeGameState(GameStates.PlayingGame);
             }
     }
 });
-
+/*
 var swipeStarted = true;
 var touchStartX: number, touchStartY: number;
 canvas.addEventListener('touchstart', (event) => {
-    if(gameMode = 'play'){
+    if(gameStateManager.gameState === GameStates.PlayingGame){
         event.preventDefault();
         swipeStarted = true;
         touchStartX = event.touches[0].clientX;
@@ -353,27 +187,26 @@ canvas.addEventListener('touchstart', (event) => {
 
 });
 canvas.addEventListener('touchmove', (event) => {
-    if(gameMode == 'play' && swipeStarted){
+    if(gameStateManager.gameState === GameStates.PlayingGame && swipeStarted){
         var diffX = touchStartX - event.touches[0].clientX;
         var diffY = touchStartY - event.touches[0].clientY;
-        console.log(diffX);
         var swipteTreshold = 40;
 
         if(Math.abs(diffX) > Math.abs(diffY)){
-            if(diffX > swipteTreshold && snake.velocity.x !== 1){
-                snake.velocity = { x: -1, y: 0 };
-            }else if(diffX < -swipteTreshold && snake.velocity.x !== -1){            
-                snake.velocity = { x: 1, y: 0 };
+            if(diffX > swipteTreshold){
+                gameWorld.snake.changeMovementDirection(SnakeDirectionChange.Left);
+            }else if(diffX < -swipteTreshold){
+                gameWorld.snake.changeMovementDirection(SnakeDirectionChange.Right);
             }
         }else{
-            if(diffY > swipteTreshold && snake.velocity.y !== 1){
-                snake.velocity = { x: 0, y: -1 };
-            }else if(diffY < -swipteTreshold && snake.velocity.y !== -1){
-                snake.velocity = { x: 0, y: 1 };
+            if(diffY > swipteTreshold){
+                gameWorld.snake.changeMovementDirection(SnakeDirectionChange.Up);
+            }else if(diffY < -swipteTreshold){
+                gameWorld.snake.changeMovementDirection(SnakeDirectionChange.Down);
             }
         }
     }
 });
 
 canvas.addEventListener("touchend", () => swipeStarted = false);
-canvas.addEventListener("touchcancel",() => swipeStarted = false);
+canvas.addEventListener("touchcancel",() => swipeStarted = false);*/

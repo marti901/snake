@@ -1,7 +1,6 @@
 import { GameWorldSizesCalculator } from "./game-world-sizes-calculator";
-import { DrawableObject } from "./interfaces/drawable-object";
 
-export class GameBackground implements DrawableObject{
+export class GameBackground {
     constructor(
         private context: CanvasRenderingContext2D,
         private gameWorldSizesCalculator: GameWorldSizesCalculator) { }

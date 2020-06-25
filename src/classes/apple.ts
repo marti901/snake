@@ -1,15 +1,22 @@
+import { GameObject } from "../interfaces/game-object.interface";
 import { Vector2d } from "./vector-2d";
 import { GameWorldSizesCalculator } from "./game-world-sizes-calculator";
-import { DrawableObject } from "./interfaces/drawable-object";
 
-export class Apple implements DrawableObject{
-    position = new Vector2d();
+export class Apple implements GameObject{
+    public position = new Vector2d();
 
     constructor(
         private context: CanvasRenderingContext2D,
         private snake: any,
         private gameWorldSizesCalculator: GameWorldSizesCalculator) {
         this.relocate();
+    }
+
+    relocate(){
+        do{
+            this.position.x =  Math.floor(Math.random() * (this.gameWorldSizesCalculator.amountOfHorizontalTiles - 1));
+            this.position.y = Math.floor(Math.random() * (this.gameWorldSizesCalculator.amountOfVertivalTiles - 1));
+        }while(this.snake.collidesWithBody(this.position));
     }
 
     draw() {
@@ -21,12 +28,5 @@ export class Apple implements DrawableObject{
             this.gameWorldSizesCalculator.tileSize, 
             this.gameWorldSizesCalculator.tileSize);
         this.context.stroke();
-    }
-
-    relocate(){
-        do{
-            this.position.x =  Math.floor(Math.random() * (this.gameWorldSizesCalculator.amountOfHorizontalTiles - 1));
-            this.position.y = Math.floor(Math.random() * (this.gameWorldSizesCalculator.amountOfVertivalTiles - 1));
-        }while(this.snake.collidesWithBody(this.position.x, this.position.y));
     }
 }
